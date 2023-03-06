@@ -9,7 +9,7 @@ public static class Program
             { "int", "variable type" },
             { "float", "variable type" },
             { "char", "variable type" },
-            { "string", "variable type" },
+            { "string", "variable type" }
         };
         var keywordsDict = new Dictionary<string, string>()
         {
@@ -44,29 +44,26 @@ public static class Program
             { "+", "operator" },
             { "==", "operator" },
             { "%", "operator" },
-            { "*", "operator" },
+            { "*", "operator" }
         };
 
         var functionsDict = new Dictionary<string, string>()
         {
             { "main", "function name" },
-            { "pow", "function name" },
+            { "pow", "function name" }
         };
 
         var fileAsList = File.ReadAllLines("test.cpp");
 
-        for (int i = 0; i < fileAsList.Length; i++)
-        {
-            fileAsList[i] += "\n";
-        }
+        for (var i = 0; i < fileAsList.Length; i++) fileAsList[i] += "\n";
 
         //string fileText = File.ReadAllText("test.cpp");
         var counter = 0;
         //Console.WriteLine(fileText);
 
         var oneWord = "";
-        bool stringStart = false;
-        bool variable = false;
+        var stringStart = false;
+        var variable = false;
 
         var foundVarTypes = new List<string>();
         var foundKeywords = new List<string>();
@@ -74,7 +71,7 @@ public static class Program
         var foundVars = new List<string>();
         var errors = new List<string>();
 
-        for (int index = 0; index < fileAsList.Length; index++)
+        for (var index = 0; index < fileAsList.Length; index++)
         {
             counter = 0;
             foreach (var character in fileAsList[index])
@@ -93,14 +90,11 @@ public static class Program
 
                 if (variable)
                 {
-                    if (character == Convert.ToChar(32))
-                    {
-                        continue;
-                    }
+                    if (character == Convert.ToChar(32)) continue;
 
                     if (character == Convert.ToChar(","))
                     {
-                        if (Char.IsDigit(oneWord[0]))
+                        if (char.IsDigit(oneWord[0]))
                         {
                             Console.WriteLine(
                                 $"{oneWord} LOOKS LIKE BULLSHIT, I THINK IT'S A LEXICAL ERROR ({index + 1},{counter})");
@@ -117,7 +111,7 @@ public static class Program
                     }
                     else if (character == Convert.ToChar(";") || character == Convert.ToChar("="))
                     {
-                        if (Char.IsDigit(oneWord[0]))
+                        if (char.IsDigit(oneWord[0]))
                         {
                             Console.WriteLine(
                                 $"{oneWord} LOOKS LIKE BULLSHIT, I THINK IT'S A LEXICAL ERROR ({index + 1},{counter})");
@@ -141,7 +135,6 @@ public static class Program
 
                 oneWord += character;
                 if (!stringStart)
-                {
                     if (character == Convert.ToChar("\n") ||
                         character == Convert.ToChar(32) ||
                         character == Convert.ToChar(33) ||
@@ -179,10 +172,7 @@ public static class Program
                     {
                         var lastCharacter = oneWord[oneWord.Length - 1];
                         oneWord = oneWord.Remove(oneWord.Length - 1);
-                        if (oneWord.Length >= 1 && oneWord[0] == Convert.ToChar("\n"))
-                        {
-                            oneWord = oneWord.Remove(0);
-                        }
+                        if (oneWord.Length >= 1 && oneWord[0] == Convert.ToChar("\n")) oneWord = oneWord.Remove(0);
 
                         if (keywordsDict.ContainsKey(oneWord))
                         {
@@ -220,7 +210,6 @@ public static class Program
                         if (oneWord.Length > 1)
                         {
                             foreach (var key in keywordsDict.Keys)
-                            {
                                 if (oneWord.Contains(key))
                                 {
                                     Console.WriteLine(
@@ -229,10 +218,8 @@ public static class Program
                                     oneWord = "";
                                     break;
                                 }
-                            }
 
                             foreach (var key in varTypesDict.Keys)
-                            {
                                 if (oneWord.Contains(key))
                                 {
                                     Console.WriteLine(
@@ -241,10 +228,9 @@ public static class Program
                                     oneWord = "";
                                     break;
                                 }
-                            }
 
                             if (oneWord != ">>" && oneWord != "<<" && oneWord != Convert.ToString(32) &&
-                                !int.TryParse(oneWord, out int a) && !float.TryParse(oneWord, out float b) &&
+                                !int.TryParse(oneWord, out var a) && !float.TryParse(oneWord, out var b) &&
                                 oneWord != Convert.ToString(""))
                             {
                                 Console.WriteLine(
@@ -256,7 +242,6 @@ public static class Program
 
                         oneWord = "";
                     }
-                }
             }
         }
 
@@ -271,43 +256,28 @@ public static class Program
         Console.WriteLine("------------------------------");
 
         Console.WriteLine();
-        foreach (var element in foundVarTypes)
-        {
-            Console.WriteLine(element);
-        }
+        foreach (var element in foundVarTypes) Console.WriteLine(element);
 
         Console.WriteLine();
 
         Console.WriteLine();
-        foreach (var element in foundKeywords)
-        {
-            Console.WriteLine(element);
-        }
+        foreach (var element in foundKeywords) Console.WriteLine(element);
 
         Console.WriteLine();
 
         Console.WriteLine();
-        foreach (var element in foundOperators)
-        {
-            Console.WriteLine(element);
-        }
+        foreach (var element in foundOperators) Console.WriteLine(element);
 
         Console.WriteLine();
 
         Console.WriteLine();
-        foreach (var element in foundVars)
-        {
-            Console.WriteLine(element);
-        }
+        foreach (var element in foundVars) Console.WriteLine(element);
 
         Console.WriteLine();
 
         Console.WriteLine();
 
-        foreach (var element in errors)
-        {
-            Console.WriteLine(element);
-        }
+        foreach (var element in errors) Console.WriteLine(element);
 
         Console.WriteLine();
         Console.WriteLine("------------------------------");
