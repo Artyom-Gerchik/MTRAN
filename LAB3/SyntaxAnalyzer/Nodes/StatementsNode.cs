@@ -2,7 +2,12 @@ using LexicalAnalyzer.Functional;
 
 namespace SyntaxAnalyzer.Nodes;
 
-public class StatementsNode
+internal class StatementsNode : AbstractNode
 {
-    
+    public List<AbstractNode> Nodes { get; set; } = new();
+
+    public void AddNode(AbstractNode node)
+    {
+        Nodes.Add(node);
+    }
 }
