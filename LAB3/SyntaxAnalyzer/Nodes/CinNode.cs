@@ -2,7 +2,7 @@ using LexicalAnalyzer.Functional;
 
 namespace SyntaxAnalyzer.Nodes;
 
-internal class CinNode
+internal class CinNode : AbstractNode
 {
     public List<AbstractNode> Parameters { get; set; }
 
