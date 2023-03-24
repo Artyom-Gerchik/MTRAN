@@ -201,14 +201,14 @@ internal class Parser
             }
 
             throw new Exception(
-                $"После токена '{Tokens[Position - 1].Identifier}' ожидается токен типа переменной или ')'");
+                $"After token '{Tokens[Position - 1].Identifier}' need token var type or ')'");
         }
 
         var parameter = Match(GetVariables());
 
         if (parameter == null)
         {
-            throw new Exception($"После токена '{Tokens[Position - 1].Identifier}' ожидается токен переменной");
+            throw new Exception($"After token '{Tokens[Position - 1].Identifier}' need token var");
         }
 
         parameters.Add(parameter);
@@ -220,7 +220,7 @@ internal class Parser
             if (Match(Lexer.VariablesTypes) == null)
             {
                 throw new Exception(
-                    $"После токена '{Tokens[Position - 1].Identifier}' ожидается токен типа переменной");
+                    $"After token '{Tokens[Position - 1].Identifier}' need token var type");
             }
 
             parameter = Match(GetVariables());
@@ -255,7 +255,7 @@ internal class Parser
 
         if (parameters.Count == 0)
         {
-            throw new Exception($"После токена '{Tokens[Position - 1].Identifier}' ожидается токен '<<'");
+            throw new Exception($"After token '{Tokens[Position - 1].Identifier}' need token '<<'");
         }
 
         return parameters;
@@ -276,7 +276,7 @@ internal class Parser
 
         if (parameters.Count == 0)
         {
-            throw new Exception($"После токена '{Tokens[Position - 1].Identifier}' ожидается токен '>>'");
+            throw new Exception($"After token '{Tokens[Position - 1].Identifier}' need token '>>'");
         }
 
         return parameters;
@@ -353,7 +353,7 @@ internal class Parser
                 else
                 {
                     throw new Exception(
-                        $"После токена '{Tokens[Position - 1].Identifier}' ожидается токен переменной или функции");
+                        $"After token '{Tokens[Position - 1].Identifier}' need token var or token function");
                 }
             }
 
@@ -371,7 +371,7 @@ internal class Parser
                     if (variableToken == null)
                     {
                         throw new Exception(
-                            $"После токена '{Tokens[Position - 1].Identifier}' ожидается токен переменной");
+                            $"After token '{Tokens[Position - 1].Identifier}' need token var");
                     }
 
                     var rightNode = new VariableNode(variableToken);
@@ -400,7 +400,7 @@ internal class Parser
                         }
 
                         throw new Exception(
-                            $"После токена '{Tokens[Position - 1].Identifier}' ожидается токен типа переменной");
+                            $"After token '{Tokens[Position - 1].Identifier}' need token var type");
                     }
 
                     var value = ParseFormula();
@@ -457,7 +457,7 @@ internal class Parser
                     }
 
                     throw new Exception(
-                        $"После токена '{Tokens[Position - 1].Identifier}' ожидается токен типа переменной");
+                        $"After token '{Tokens[Position - 1].Identifier}' need token var type");
                 }
 
                 var rightFormulaNode = ParseFormula();
@@ -471,7 +471,7 @@ internal class Parser
                 return null;
             }
 
-            throw new Exception($"После токена '{Tokens[Position - 1].Identifier}' ожидается токен оператора");
+            throw new Exception($"After token '{Tokens[Position - 1].Identifier}' need token operator");
         }
 
         if (Match(Lexer.CurrentKeyWords.Keys.ToList()) != null)
@@ -521,7 +521,7 @@ internal class Parser
                     if (variable == null)
                     {
                         throw new Exception(
-                            $"После токена '{Tokens[Position - 1].Identifier}' ожидается токен переменной");
+                            $"After token '{Tokens[Position - 1].Identifier}' need token var");
                     }
 
                     Require(new List<string> { ")" });
@@ -540,14 +540,14 @@ internal class Parser
                         if (literalNode == null)
                         {
                             throw new Exception(
-                                $"После токена {Tokens[Position - 1].Identifier} ожидается токен литерала");
+                                $"After token {Tokens[Position - 1].Identifier} need token literal");
                         }
 
                         Require(new List<string> { ":" });
                         return new CaseNode(literalNode.Literal);
                     }
 
-                    throw new Exception("Неожидаемый токен: 'case' вне конструкции 'switch'");
+                    throw new Exception("Unexpected token: 'case' without 'switch'");
                 case "default":
                     if (Switch)
                     {
@@ -555,7 +555,7 @@ internal class Parser
                         return new KeyWordNode(token);
                     }
 
-                    throw new Exception("Неожидаемый токен: 'default' вне конструкции 'switch'");
+                    throw new Exception("Unexpected token: 'default' without 'switch'");
                 case "break":
                     Require(new List<string> { ";" });
                     return new KeyWordNode(token);
@@ -571,7 +571,7 @@ internal class Parser
             }
         }
 
-        throw new Exception($"Ожидается тип переменной, переменная, литерал или ключевое слово {Position}");
+        throw new Exception($"Need var type, var, literal {Position}");
     }
 
     public AbstractNode ParseCode()
