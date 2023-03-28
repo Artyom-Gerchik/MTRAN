@@ -8,8 +8,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\LAB3\LexicalAnalyzer\LexicalAnalyzer.csproj" />
-      <ProjectReference Include="..\..\LAB3\SyntaxAnalyzer\SyntaxAnalyzer.csproj" />
+        <ProjectReference Include="..\..\LAB3\LexicalAnalyzer\LexicalAnalyzer.csproj"/>
+        <ProjectReference Include="..\..\LAB3\SyntaxAnalyzer\SyntaxAnalyzer.csproj"/>
     </ItemGroup>
 
 </Project>

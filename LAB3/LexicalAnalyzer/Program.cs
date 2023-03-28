@@ -4,12 +4,12 @@ namespace LexicalAnalyzer;
 
 internal class Program
 {
-    static void Main(string[] args)
+    private static void Main(string[] args)
     {
         var path = "test.cpp";
 
         using var reader = new StreamReader(path!);
-        string codeText = reader.ReadToEnd();
+        var codeText = reader.ReadToEnd();
         reader.Close();
 
         var lexer = new Lexer(path, codeText);
@@ -25,49 +25,30 @@ internal class Program
             Console.WriteLine("\nVariables:");
 
             foreach (var elem in lexer.VariablesTables)
-            {
                 //Console.WriteLine($"\t{elem.Key}"); // UNCOMMENT THIS TO SEE DEPTH LEVEL //
 
-                foreach (var elem2 in elem.Value)
-                {
-                    Console.WriteLine($"\t{elem2.Key} : {elem2.Value}");
-                }
-            }
+            foreach (var elem2 in elem.Value)
+                Console.WriteLine($"\t{elem2.Key} : {elem2.Value}");
 
             Console.WriteLine("\nLiterals:");
 
-            foreach (var elem in lexer.Literals)
-            {
-                Console.WriteLine($"\t{elem.Key} : {elem.Value}");
-            }
+            foreach (var elem in lexer.Literals) Console.WriteLine($"\t{elem.Key} : {elem.Value}");
 
             Console.WriteLine("\nKey words:");
 
-            foreach (var elem in lexer.CurrentKeyWords)
-            {
-                Console.WriteLine($"\t{elem.Key} : {elem.Value}");
-            }
+            foreach (var elem in lexer.CurrentKeyWords) Console.WriteLine($"\t{elem.Key} : {elem.Value}");
 
             Console.WriteLine("\nKey symbols:");
 
-            foreach (var elem in lexer.CurrentKeySymbols)
-            {
-                Console.WriteLine($"\t{elem.Key} : {elem.Value}");
-            }
+            foreach (var elem in lexer.CurrentKeySymbols) Console.WriteLine($"\t{elem.Key} : {elem.Value}");
 
             Console.WriteLine("\nOperations:");
 
-            foreach (var elem in lexer.CurrentOperations)
-            {
-                Console.WriteLine($"\t{elem.Key} : {elem.Value}");
-            }
+            foreach (var elem in lexer.CurrentOperations) Console.WriteLine($"\t{elem.Key} : {elem.Value}");
 
             Console.WriteLine("\nTokens:");
 
-            foreach (var elem in lexer.Tokens)
-            {
-                Console.WriteLine($"\t{elem.Identifier} {elem.Type}");
-            }
+            foreach (var elem in lexer.Tokens) Console.WriteLine($"\t{elem.Identifier} {elem.Type}");
         }
     }
 }

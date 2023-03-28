@@ -2,7 +2,7 @@ using LexicalAnalyzer.Functional;
 
 namespace SyntaxAnalyzer.Nodes;
 
-internal class FunctionExecutionNode : AbstractNode
+public class FunctionExecutionNode : AbstractNode
 {
     public Token Function { get; set; }
     public List<AbstractNode> Parameters { get; set; }

@@ -23,18 +23,18 @@ public class Lexer
     {
         Path = path;
         Code = code;
-        Tokens = new();
+        Tokens = new List<Token>();
         ErrorMessage = string.Empty;
-        Literals = new();
-        CurrentKeyWords = new();
-        CurrentKeySymbols = new();
-        CurrentOperations = new();
-        VariablesTables = new()
+        Literals = new Dictionary<string, string>();
+        CurrentKeyWords = new Dictionary<string, string>();
+        CurrentKeySymbols = new Dictionary<string, string>();
+        CurrentOperations = new Dictionary<string, string>();
+        VariablesTables = new Dictionary<string, Dictionary<string, string>>
         {
             { "0:0", new Dictionary<string, string>() }
         };
-        VariablesTypes = new() { "int", "float", "char", "string", "void", "bool" };
-        KeyWords = new()
+        VariablesTypes = new List<string> { "int", "float", "char", "string", "void", "bool" };
+        KeyWords = new Dictionary<string, string>
         {
             { "do", "key word" },
             { "while", "key word" },
@@ -60,7 +60,7 @@ public class Lexer
             { "std", "namespace" },
             { "return", "keyword" }
         };
-        KeySymbols = new()
+        KeySymbols = new Dictionary<string, string>
         {
             { "(", "key symbol" },
             { ")", "key symbol" },
@@ -70,9 +70,9 @@ public class Lexer
             { "]", "key symbol" },
             { ",", "key symbol" },
             { ":", "key symbol" },
-            { ";", "key symbol" },
+            { ";", "key symbol" }
         };
-        Operations = new()
+        Operations = new Dictionary<string, string>
         {
             { "=", "operation" },
             { "!", "operation" },
@@ -82,14 +82,13 @@ public class Lexer
             { "-", "operation" },
             { "*", "operation" },
             { "/", "operation" },
-            { "?", "operation" },
+            { "?", "operation" }
         };
     }
 
     private string VariableExists(string word, string environment, bool skip = false)
     {
         while (environment != "-1")
-        {
             if (VariablesTables[environment].ContainsKey(word))
             {
                 return environment;
@@ -103,16 +102,12 @@ public class Lexer
                 environment = string.Empty;
                 environment += temp[0];
 
-                for (var i = 1; i < temp.Length; i++)
-                {
-                    environment += $":{temp[i]}";
-                }
+                for (var i = 1; i < temp.Length; i++) environment += $":{temp[i]}";
             }
             else
             {
                 break;
             }
-        }
 
         return string.Empty;
     }
@@ -120,19 +115,13 @@ public class Lexer
     private string Variable()
     {
         for (var i = 1; i <= Tokens.Count; i++)
-        {
             if (Tokens[^i].Identifier != "," && !VariablesTypes.Contains(Tokens[^i].Type))
             {
                 if (VariablesTypes.Contains(Tokens[^i].Identifier))
-                {
                     return Tokens[^i].Identifier;
-                }
                 else
-                {
                     return string.Empty;
-                }
             }
-        }
 
         return string.Empty;
     }
@@ -156,15 +145,10 @@ public class Lexer
             if ((symbol != ' ' || readSpace) && symbol != '\n' && symbol != '\t' && symbol != '\r'
                 && !KeySymbols.ContainsKey($"{symbol}") && !Operations.ContainsKey($"{symbol}"))
             {
-                if (symbol == '\"' && !isCharReading)
-                {
-                    readSpace = !readSpace;
-                }
+                if (symbol == '\"' && !isCharReading) readSpace = !readSpace;
 
                 if (symbol == '\'' && !readSpace && (word == string.Empty || word[^1] != '\\'))
-                {
                     isCharReading = !isCharReading;
-                }
 
                 word += symbol;
             }
@@ -188,10 +172,7 @@ public class Lexer
 
                 if (KeyWords.ContainsKey(word))
                 {
-                    if (!CurrentKeyWords.ContainsKey(word))
-                    {
-                        CurrentKeyWords.Add(word, KeyWords[word]);
-                    }
+                    if (!CurrentKeyWords.ContainsKey(word)) CurrentKeyWords.Add(word, KeyWords[word]);
 
                     Tokens.Add(new Token(word, "key word"));
 
@@ -207,10 +188,7 @@ public class Lexer
                         environment = string.Empty;
                         environment += temp[0];
 
-                        for (var i = 1; i < temp.Length; i++)
-                        {
-                            environment += $":{temp[i]}";
-                        }
+                        for (var i = 1; i < temp.Length; i++) environment += $":{temp[i]}";
 
                         environment += $":{name}";
 
@@ -221,10 +199,7 @@ public class Lexer
                 }
                 else if (VariablesTypes.Contains(word))
                 {
-                    if (!CurrentKeyWords.ContainsKey(word))
-                    {
-                        CurrentKeyWords.Add(word, "variable type");
-                    }
+                    if (!CurrentKeyWords.ContainsKey(word)) CurrentKeyWords.Add(word, "variable type");
 
                     Tokens.Add(new Token(word, "variable type"));
 
@@ -268,13 +243,9 @@ public class Lexer
                             var temp = VariableExists(word, environment);
 
                             if (temp != string.Empty)
-                            {
                                 Tokens.Add(new Token(word, VariablesTables[temp][word]));
-                            }
                             else
-                            {
                                 Tokens.Add(new Token(word, CurrentKeyWords[word]));
-                            }
                         }
                         else
                         {
@@ -289,10 +260,7 @@ public class Lexer
                 }
                 else if (word.StartsWith("\"") && word.EndsWith("\"") && word.Length >= 2)
                 {
-                    if (!Literals.ContainsKey(word))
-                    {
-                        Literals.Add(word, "string literal");
-                    }
+                    if (!Literals.ContainsKey(word)) Literals.Add(word, "string literal");
 
                     Tokens.Add(new Token(word, "string literal"));
 
@@ -302,17 +270,14 @@ public class Lexer
                 {
                     if (word.Length >= 3)
                     {
-                        if ((word.Length == 3 && word[1] != '\\') || (word.Length == 4 && word[1] == '\\' &&
-                                                                      (word[2] == 'r' || word[2] == 'n' ||
-                                                                       word[2] == 't' || word[2] == 'v' ||
-                                                                       word[2] == '\"'
-                                                                       || word[2] == '\'' || word[2] == '\\' ||
-                                                                       word[2] == '0')))
+                        if (word.Length == 3 && word[1] != '\\' || word.Length == 4 && word[1] == '\\' &&
+                            (word[2] == 'r' || word[2] == 'n' ||
+                             word[2] == 't' || word[2] == 'v' ||
+                             word[2] == '\"'
+                             || word[2] == '\'' || word[2] == '\\' ||
+                             word[2] == '0'))
                         {
-                            if (!Literals.ContainsKey(word))
-                            {
-                                Literals.Add(word, "char literal");
-                            }
+                            if (!Literals.ContainsKey(word)) Literals.Add(word, "char literal");
 
                             Tokens.Add(new Token(word, "char literal"));
 
@@ -336,10 +301,7 @@ public class Lexer
                 }
                 else if (int.TryParse(word, out var val1))
                 {
-                    if (!Literals.ContainsKey(word))
-                    {
-                        Literals.Add(word, "int literal");
-                    }
+                    if (!Literals.ContainsKey(word)) Literals.Add(word, "int literal");
 
                     Tokens.Add(new Token(word, "int literal"));
 
@@ -347,10 +309,7 @@ public class Lexer
                 }
                 else if (double.TryParse(word.Replace('.', ','), out var val2))
                 {
-                    if (!Literals.ContainsKey(word))
-                    {
-                        Literals.Add(word, "float literal");
-                    }
+                    if (!Literals.ContainsKey(word)) Literals.Add(word, "float literal");
 
                     Tokens.Add(new Token(word, "float literal"));
 
@@ -380,17 +339,13 @@ public class Lexer
                 if (!readSpace && !isCharReading)
                 {
                     if (symbol == '(')
-                    {
                         if (VariablesTypes.Contains(Tokens[^1].Type))
                         {
                             var temp = Tokens[^1].Identifier;
 
                             VariablesTables[environment].Remove(temp);
 
-                            if (!CurrentKeyWords.ContainsKey(temp))
-                            {
-                                CurrentKeyWords.Add(temp, "function");
-                            }
+                            if (!CurrentKeyWords.ContainsKey(temp)) CurrentKeyWords.Add(temp, "function");
 
                             Tokens.RemoveAt(Tokens.Count - 1);
 
@@ -406,32 +361,22 @@ public class Lexer
                             environment = string.Empty;
                             environment += temp2[0];
 
-                            for (var i = 1; i < temp2.Length; i++)
-                            {
-                                environment += $":{temp2[i]}";
-                            }
+                            for (var i = 1; i < temp2.Length; i++) environment += $":{temp2[i]}";
 
                             environment += $":{name}";
 
                             VariablesTables.Add(environment, new Dictionary<string, string>());
                         }
-                    }
 
                     if (symbol == '*')
-                    {
                         if (VariablesTypes.Contains(Tokens[^1].Identifier))
                         {
                             var temp = Tokens[^1].Identifier;
 
-                            if (!VariablesTypes.Contains($"{temp}*"))
-                            {
-                                VariablesTypes.Add($"{temp}*");
-                            }
+                            if (!VariablesTypes.Contains($"{temp}*")) VariablesTypes.Add($"{temp}*");
 
                             if (!CurrentKeyWords.ContainsKey($"{temp}*"))
-                            {
                                 CurrentKeyWords.Add($"{temp}*", "variable type");
-                            }
 
                             Tokens.RemoveAt(Tokens.Count - 1);
 
@@ -439,17 +384,14 @@ public class Lexer
 
                             continue;
                         }
-                    }
 
                     if (symbol == '<' || symbol == '>')
-                    {
                         if (Tokens[^1].Identifier == "#include")
                         {
                             word += symbol;
 
                             continue;
                         }
-                    }
 
                     if (symbol == '{' && !isBlock)
                     {
@@ -461,10 +403,7 @@ public class Lexer
                         environment = string.Empty;
                         environment += temp[0];
 
-                        for (var i = 1; i < temp.Length; i++)
-                        {
-                            environment += $":{temp[i]}";
-                        }
+                        for (var i = 1; i < temp.Length; i++) environment += $":{temp[i]}";
 
                         environment += $":{name}";
 
@@ -485,10 +424,7 @@ public class Lexer
                         environment = string.Empty;
                         environment += temp[0];
 
-                        for (var i = 1; i < temp.Length; i++)
-                        {
-                            environment += $":{temp[i]}";
-                        }
+                        for (var i = 1; i < temp.Length; i++) environment += $":{temp[i]}";
                     }
                 }
 
@@ -497,9 +433,7 @@ public class Lexer
                     if (KeySymbols.ContainsKey($"{symbol}"))
                     {
                         if (!CurrentKeySymbols.ContainsKey($"{symbol}"))
-                        {
                             CurrentKeySymbols.Add($"{symbol}", "key symbol");
-                        }
 
                         Tokens.Add(new Token(symbol.ToString(), "key symbol"));
                     }
@@ -516,12 +450,8 @@ public class Lexer
                                     CurrentOperations[$"{symbol}"].Replace($"{temp}", $"{--temp}");
 
                                 foreach (var elem in CurrentOperations)
-                                {
                                     if (elem.Value.Split()[^1] == "0")
-                                    {
                                         CurrentOperations.Remove($"{symbol}");
-                                    }
-                                }
 
                                 CurrentOperations.Add($"{symbol}{symbol}", "operation");
                             }
@@ -532,12 +462,8 @@ public class Lexer
                                     CurrentOperations[$"{symbol}"].Replace($"{temp}", $"{--temp}");
 
                                 foreach (var elem in CurrentOperations)
-                                {
                                     if (elem.Value.Split()[^1] == "0")
-                                    {
                                         CurrentOperations.Remove($"{symbol}");
-                                    }
-                                }
                             }
 
                             Tokens.RemoveAt(Tokens.Count - 1);
@@ -554,12 +480,8 @@ public class Lexer
                                     CurrentOperations[$"{Tokens[^1].Identifier}"].Replace($"{temp}", $"{--temp}");
 
                                 foreach (var elem in CurrentOperations)
-                                {
                                     if (elem.Value.Split()[^1] == "0")
-                                    {
                                         CurrentOperations.Remove($"{Tokens[^1].Identifier}");
-                                    }
-                                }
 
                                 CurrentOperations.Add($"{Tokens[^1].Identifier}{symbol}", "operation");
                             }
@@ -570,12 +492,8 @@ public class Lexer
                                     CurrentOperations[$"{Tokens[^1].Identifier}"].Replace($"{temp}", $"{--temp}");
 
                                 foreach (var elem in CurrentOperations)
-                                {
                                     if (elem.Value.Split()[^1] == "0")
-                                    {
                                         CurrentOperations.Remove($"{symbol}");
-                                    }
-                                }
                             }
 
                             Tokens.Add(new Token($"{Tokens[^1].Identifier}{symbol}", "operation"));

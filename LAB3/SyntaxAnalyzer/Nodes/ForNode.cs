@@ -2,7 +2,7 @@ using LexicalAnalyzer.Functional;
 
 namespace SyntaxAnalyzer.Nodes;
 
-internal class ForNode : AbstractNode
+public class ForNode : AbstractNode
 {
     public AbstractNode First { get; set; }
     public AbstractNode Second { get; set; }

@@ -5,28 +5,18 @@ namespace SyntaxAnalyzer;
 
 internal class Program
 {
-    static void BeautifyByTabs(int amountOfTabs)
+    private static void BeautifyByTabs(int amountOfTabs)
     {
-        for (var i = 0; i < amountOfTabs; i++)
-        {
-            Console.Write("\t");
-        }
+        for (var i = 0; i < amountOfTabs; i++) Console.Write("\t");
     }
 
-    static void PrintNode(AbstractNode? abstractNode, int depth = 0)
+    private static void PrintNode(AbstractNode? abstractNode, int depth = 0)
     {
-        if (abstractNode == null)
-        {
-            return;
-        }
+        if (abstractNode == null) return;
 
         if (abstractNode is StatementsNode node)
-        {
             foreach (var elem in node.Nodes)
-            {
                 PrintNode(elem, depth);
-            }
-        }
 
         if (abstractNode is FunctionNode functionNode)
         {
@@ -67,10 +57,7 @@ internal class Program
             BeautifyByTabs(depth);
             Console.WriteLine("cout");
 
-            foreach (var elem in coutNode.Parameters)
-            {
-                PrintNode(elem, depth + 1);
-            }
+            foreach (var elem in coutNode.Parameters) PrintNode(elem, depth + 1);
         }
 
         if (abstractNode is CinNode cinNode)
@@ -78,10 +65,7 @@ internal class Program
             BeautifyByTabs(depth);
             Console.WriteLine("cin");
 
-            foreach (var elem in cinNode.Parameters)
-            {
-                PrintNode(elem, depth + 1);
-            }
+            foreach (var elem in cinNode.Parameters) PrintNode(elem, depth + 1);
         }
 
         if (abstractNode is ForNode forNode)
@@ -100,10 +84,7 @@ internal class Program
             BeautifyByTabs(depth);
             Console.WriteLine(functionExecutionNode.Function.Identifier);
 
-            foreach (var elem in functionExecutionNode.Parameters)
-            {
-                PrintNode(elem, depth + 1);
-            }
+            foreach (var elem in functionExecutionNode.Parameters) PrintNode(elem, depth + 1);
         }
 
         if (abstractNode is SwitchNode switchNode)
@@ -165,12 +146,12 @@ internal class Program
         Console.WriteLine();
     }
 
-    static void Main()
+    private static void Main()
     {
         var pathToFile = "test.cpp";
 
         using var reader = new StreamReader(pathToFile!);
-        string codeText = reader.ReadToEnd();
+        var codeText = reader.ReadToEnd();
         reader.Close();
 
         var lexer = new Lexer(pathToFile, codeText);

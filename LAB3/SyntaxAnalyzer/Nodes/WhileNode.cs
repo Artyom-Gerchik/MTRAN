@@ -2,7 +2,7 @@ using LexicalAnalyzer.Functional;
 
 namespace SyntaxAnalyzer.Nodes;
 
-internal class WhileNode : AbstractNode
+public class WhileNode : AbstractNode
 {
     public AbstractNode Condition { get; set; }
     public AbstractNode Body { get; set; }

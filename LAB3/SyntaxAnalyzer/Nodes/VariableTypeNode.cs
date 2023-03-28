@@ -2,7 +2,7 @@ using LexicalAnalyzer.Functional;
 
 namespace SyntaxAnalyzer.Nodes;
 
-internal class VariableTypeNode : AbstractNode
+public class VariableTypeNode : AbstractNode
 {
     public Token VariableType { get; set; }
 

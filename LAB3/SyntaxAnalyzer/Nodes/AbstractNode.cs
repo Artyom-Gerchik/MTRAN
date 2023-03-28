@@ -1,6 +1,5 @@
 namespace SyntaxAnalyzer.Nodes;
 
-internal class AbstractNode
+public class AbstractNode
 {
-    
 }

@@ -3,7 +3,7 @@ using SyntaxAnalyzer.Nodes;
 
 namespace SyntaxAnalyzer;
 
-internal class Parser
+public class Parser
 {
     public Lexer Lexer { get; set; }
     public List<Token> Tokens { get; set; }
@@ -37,9 +37,7 @@ internal class Parser
         var token = Match(tokenTypes);
 
         if (token == null)
-        {
             throw new Exception($"after token '{Tokens[Position - 1].Identifier}' needs token '{tokenTypes[0]}'");
-        }
 
         return token;
     }
@@ -49,37 +47,26 @@ internal class Parser
         var variables = new List<string>();
 
         foreach (var elem in Lexer.VariablesTables.Values)
-        {
-            foreach (var elem2 in elem.Keys)
-            {
-                variables.Add(elem2);
-            }
-        }
+        foreach (var elem2 in elem.Keys)
+            variables.Add(elem2);
 
         return variables;
     }
 
-    AbstractNode ParseVariableType()
+    private AbstractNode ParseVariableType()
     {
         var type = Match(Lexer.VariablesTypes);
 
-        if (type != null)
-        {
-            return new VariableTypeNode(type);
-        }
+        if (type != null) return new VariableTypeNode(type);
 
         throw new Exception($"After token '{Tokens[Position - 1].Identifier}' need var token");
     }
 
-
-    AbstractNode ParseVariableOrLiteral()
+    private AbstractNode ParseVariableOrLiteral()
     {
         var number = Match(Lexer.Literals.Keys.ToList());
 
-        if (number != null)
-        {
-            return new LiteralNode(number);
-        }
+        if (number != null) return new LiteralNode(number);
 
         var variable = Match(GetVariables());
 
@@ -101,9 +88,7 @@ internal class Parser
         }
 
         if (Tokens[Position].Identifier == "false" || Tokens[Position].Identifier == "true")
-        {
             return new LiteralNode(new Token(Tokens[Position++].Identifier, "bool literal"));
-        }
 
         throw new Exception($"After token '{Tokens[Position - 1].Identifier}' needs var or literal token");
     }
@@ -129,7 +114,6 @@ internal class Parser
         @operator ??= Match(new List<string> { "[" });
 
         while (@operator != null)
-        {
             if (@operator.Identifier == "[")
             {
                 @operator.Identifier = "[]";
@@ -183,7 +167,6 @@ internal class Parser
                 @operator = Match(Lexer.Operations.Keys.ToList());
                 @operator ??= Match(new List<string> { "[" });
             }
-        }
 
         return leftNode;
     }
@@ -206,10 +189,7 @@ internal class Parser
 
         var parameter = Match(GetVariables());
 
-        if (parameter == null)
-        {
-            throw new Exception($"After token '{Tokens[Position - 1].Identifier}' need token var");
-        }
+        if (parameter == null) throw new Exception($"After token '{Tokens[Position - 1].Identifier}' need token var");
 
         parameters.Add(parameter);
 
@@ -218,10 +198,8 @@ internal class Parser
         while (keySymbol != null)
         {
             if (Match(Lexer.VariablesTypes) == null)
-            {
                 throw new Exception(
                     $"After token '{Tokens[Position - 1].Identifier}' need token var type");
-            }
 
             parameter = Match(GetVariables());
             parameters.Add(parameter!);
@@ -254,9 +232,7 @@ internal class Parser
         }
 
         if (parameters.Count == 0)
-        {
             throw new Exception($"After token '{Tokens[Position - 1].Identifier}' need token '<<'");
-        }
 
         return parameters;
     }
@@ -275,9 +251,7 @@ internal class Parser
         }
 
         if (parameters.Count == 0)
-        {
             throw new Exception($"After token '{Tokens[Position - 1].Identifier}' need token '>>'");
-        }
 
         return parameters;
     }
@@ -369,10 +343,8 @@ internal class Parser
                     variableToken = Match(GetVariables());
 
                     if (variableToken == null)
-                    {
                         throw new Exception(
                             $"After token '{Tokens[Position - 1].Identifier}' need token var");
-                    }
 
                     var rightNode = new VariableNode(variableToken);
                     leftNode = new BinaryOperationNode(new Token("=", "operation"), leftNode, rightNode);
@@ -519,10 +491,8 @@ internal class Parser
                     var variable = Match(GetVariables());
 
                     if (variable == null)
-                    {
                         throw new Exception(
                             $"After token '{Tokens[Position - 1].Identifier}' need token var");
-                    }
 
                     Require(new List<string> { ")" });
                     Require(new List<string> { "{" });
@@ -538,10 +508,8 @@ internal class Parser
                         var literalNode = ParseVariableOrLiteral() as LiteralNode;
 
                         if (literalNode == null)
-                        {
                             throw new Exception(
                                 $"After token {Tokens[Position - 1].Identifier} need token literal");
-                        }
 
                         Require(new List<string> { ":" });
                         return new CaseNode(literalNode.Literal);
@@ -580,17 +548,11 @@ internal class Parser
 
         while (Position < Tokens.Count)
         {
-            if (Match(new List<string> { "}" }) != null)
-            {
-                return root;
-            }
+            if (Match(new List<string> { "}" }) != null) return root;
 
             var statementNode = ParseExpression();
 
-            if (statementNode != null)
-            {
-                root.AddNode(statementNode);
-            }
+            if (statementNode != null) root.AddNode(statementNode);
         }
 
         return root;
