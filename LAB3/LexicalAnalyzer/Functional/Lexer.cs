@@ -134,7 +134,7 @@ public class Lexer
         var isCharReading = false;
         var level = 0;
         var name = 0;
-        var environment = "0:0";
+        var environment = "0:0"; // depth level
         var row = 1;
         var col = 1;
         var info = "";

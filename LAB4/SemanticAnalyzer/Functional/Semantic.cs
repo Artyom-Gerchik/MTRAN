@@ -3,7 +3,7 @@ using SyntaxAnalyzer.Nodes;
 
 namespace SemanticAnalyzer.Functional;
 
-internal class Semantic
+public class Semantic
 {
     private AbstractNode Root { get; set; }
     private Dictionary<string, List<Token>> Functions { get; set; } = new();
@@ -108,30 +108,22 @@ internal class Semantic
 
             if (returnType1 != returnType2)
             {
-                if ((returnType1 != "int" || returnType2 != "float") &&
-                    (returnType1 != "int" || returnType2 != "char") &&
-                    (returnType1 != "float" || returnType2 != "char") &&
-                    (returnType1 != "float" || returnType2 != "int") &&
-                    (returnType1 != "char" || returnType2 != "int") &&
-                    (returnType1 != "char" || returnType2 != "float"))
-                {
-                    if (binaryOperationNode1.Operator.Identifier != "new" &&
-                        binaryOperationNode1.Operator.Identifier != "[]")
-                        throw new Exception(
-                            $"not real to do operation {binaryOperationNode1.Operator.Identifier} for {returnType1} and {returnType2}");
+                if (binaryOperationNode1.Operator.Identifier != "new" &&
+                    binaryOperationNode1.Operator.Identifier != "[]")
+                    throw new Exception(
+                        $"not real to do operation {binaryOperationNode1.Operator.Identifier} for {returnType1} and {returnType2}");
 
-                    if (returnType2 != "int" && returnType2 != "char")
+                if (returnType2 != "int" && returnType2 != "char")
+                    throw new Exception(
+                        $"not real to do operation {binaryOperationNode1.Operator.Identifier} for {returnType1} and {returnType2}");
+            }
+            else
+            {
+                if (binaryOperationNode1.Operator.Identifier == "new" ||
+                    binaryOperationNode1.Operator.Identifier == "[]")
+                    if (returnType1 != "int" && returnType2 != "char")
                         throw new Exception(
                             $"not real to do operation {binaryOperationNode1.Operator.Identifier} for {returnType1} and {returnType2}");
-                }
-                else
-                {
-                    if (binaryOperationNode1.Operator.Identifier == "new" ||
-                        binaryOperationNode1.Operator.Identifier == "[]")
-                        if (returnType1 != "int" && returnType2 != "char")
-                            throw new Exception(
-                                $"not real to do operation {binaryOperationNode1.Operator.Identifier} for {returnType1} and {returnType2}");
-                }
             }
         }
 
@@ -171,12 +163,7 @@ internal class Semantic
                     throw new Exception($"not real to do operation [] for {returnType3}");
                 }
 
-                if ((returnType1 != "int" || returnType2 != "float") &&
-                    (returnType1 != "int" || returnType2 != "char") &&
-                    (returnType1 != "float" || returnType2 != "char") &&
-                    (returnType1 != "float" || returnType2 != "int") &&
-                    (returnType1 != "char" || returnType2 != "int") &&
-                    (returnType1 != "char" || returnType2 != "float"))
+                if (returnType1 != returnType2)
                     throw new Exception(
                         $"not real to do operation {binaryOperationNode.Operator.Identifier} for {returnType1} and {returnType2}");
 
@@ -240,14 +227,8 @@ internal class Semantic
 
 
             if (returnType1 != returnType2)
-                if ((returnType1 != "int" || returnType2 != "float") &&
-                    (returnType1 != "int" || returnType2 != "char") &&
-                    (returnType1 != "float" || returnType2 != "char") &&
-                    (returnType1 != "float" || returnType2 != "int") &&
-                    (returnType1 != "char" || returnType2 != "int") &&
-                    (returnType1 != "char" || returnType2 != "float"))
-                    throw new Exception(
-                        $"different return types : {returnType1} and {returnType2}");
+                throw new Exception(
+                    $"different return types : {returnType1} and {returnType2}");
         }
 
 
