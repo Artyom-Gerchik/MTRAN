@@ -18,6 +18,7 @@ public class Executor
     private bool InSwitch { get; set; }
     private object? SwitchValue { get; set; }
     private bool InFor { get; set; }
+    private Dictionary<string, Dictionary<string, AbstractNode>> Functions { get; set; } = new();
 
     public Executor(AbstractNode root, Dictionary<string, Dictionary<string, string>> variableTables, Semantic semantic)
     {
@@ -34,7 +35,7 @@ public class Executor
         }
 
         Semantic = semantic;
-        CodeBlock = "NONE";
+        CodeBlock = "NONE"; // would be needed for code expanding
         CodeDepthLevel = -1;
         CodeDepthParent = -1;
         CodeBlockIndex = -1;
@@ -60,22 +61,9 @@ public class Executor
 
         if (abstractNode is StatementsNode statementsNode)
         {
-            if (InFor)
+            if (!InFor)
             {
-                CodeDepthLevel += 1;
-                CodeDepthParent += 1;
-
-                var block = CodeBlock.Split(":");
-                block[0] = CodeDepthLevel.ToString();
-                CodeBlock = "";
-                CodeBlock += block[0];
-
-                for (int index = 1; index < block.Length; index++)
-                {
-                    CodeBlock += $":{block[index]}";
-                }
-
-                CodeBlock += $":{CodeDepthParent}";
+                IncreaseDepth();
             }
             else
             {
@@ -89,6 +77,8 @@ public class Executor
                     WorkOnNode(node);
                 }
             }
+
+            DecreaseDepthOnlyForLevel();
         }
 
         if (abstractNode is KeyWordNode keyWordNode)
@@ -152,6 +142,17 @@ public class Executor
             {
                 WorkOnNode(functionNode.Body);
             }
+            else
+            {
+                IncreaseDepth();
+                Functions.Add(functionNode.Function.Identifier,
+                    new Dictionary<string, AbstractNode> { { CodeBlock, functionNode.Body } });
+                DecreaseDepth();
+
+                ExecuteNode(functionNode.Body);
+            }
+
+            return null;
         }
 
         if (abstractNode is VariableTypeNode)
@@ -193,6 +194,55 @@ public class Executor
         if (abstractNode is WhileNode whileNode)
         {
             ExecuteNode(whileNode.Body);
+        }
+    }
+
+    private void IncreaseDepth()
+    {
+        CodeDepthLevel += 1;
+        CodeDepthParent += 1;
+
+        var block = CodeBlock.Split(":");
+        block[0] = CodeDepthLevel.ToString();
+        CodeBlock = "";
+        CodeBlock += block[0];
+
+        for (int index = 1; index < block.Length; index++)
+        {
+            CodeBlock += $":{block[index]}";
+        }
+
+        CodeBlock += $":{CodeDepthParent}";
+    }
+
+    private void DecreaseDepth()
+    {
+        CodeDepthLevel -= 1;
+        CodeDepthParent -= 1;
+
+        CodeBlock = CodeBlock.Remove(CodeBlock.Length - 2);
+        var block = CodeDepthLevel.ToString();
+        CodeBlock = "";
+        CodeBlock += block[0];
+
+        for (int index = 1; index < block.Length; index++)
+        {
+            CodeBlock += $":{block[index]}";
+        }
+    }
+
+    private void DecreaseDepthOnlyForLevel()
+    {
+        CodeDepthLevel -= 1;
+
+        CodeBlock = CodeBlock.Remove(CodeBlock.Length - 2);
+        var block = CodeDepthLevel.ToString();
+        CodeBlock = "";
+        CodeBlock += block[0];
+
+        for (int index = 1; index < block.Length; index++)
+        {
+            CodeBlock += $":{block[index]}";
         }
     }
 }
