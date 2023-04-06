@@ -6,7 +6,7 @@ namespace LAB5.Functional;
 public class Executor
 {
     private AbstractNode Root { get; set; }
-    private Dictionary<string, Dictionary<string, object>> VariableTables { get; set; } = new();
+    private Dictionary<string, Dictionary<string, object?>> VariableTables { get; set; } = new();
     private Semantic Semantic { get; set; }
     private string CodeBlock { get; set; }
     private int CodeDepthLevel { get; set; }
@@ -154,49 +154,49 @@ public class Executor
                     }
                 }
 
-                // if (param is BinaryOperationNode binaryOperationNode)
-                // {
-                //     var leftNode = binaryOperationNode.LeftNode as VariableNode;
-                //     var indexRightNodeToInsert = WorkOnNode(binaryOperationNode.RightNode) as int?;
-                //
-                //     while (codeBlock != "-1")
-                //     {
-                //         if (VariableTables[codeBlock].ContainsKey(leftNode!.Variable.Identifier))
-                //         {
-                //             break;
-                //         }
-                //         else
-                //         {
-                //             codeBlock = ModifyLocalCodeBlock(codeBlock);
-                //         }
-                //     }
-                //
-                //     var paramType = Semantic.GetReturnType(param);
-                //
-                //     switch (paramType)
-                //     {
-                //         case "int":
-                //             (VariableTables[codeBlock][leftNode!.Variable.Identifier] as List<int>)![
-                //                 int.Parse(indexRightNodeToInsert.ToString()!)] = int.Parse(Console.ReadLine()!);
-                //             break;
-                //         case "float":
-                //             (VariableTables[codeBlock][leftNode!.Variable.Identifier] as List<double>)![
-                //                 int.Parse(indexRightNodeToInsert.ToString()!)] = double.Parse(Console.ReadLine()!);
-                //             break;
-                //         case "char":
-                //             (VariableTables[codeBlock][leftNode!.Variable.Identifier] as List<char>)![
-                //                 int.Parse(indexRightNodeToInsert.ToString()!)] = char.Parse(Console.ReadLine()!);
-                //             break;
-                //         case "bool":
-                //             (VariableTables[codeBlock][leftNode!.Variable.Identifier] as List<bool>)![
-                //                 int.Parse(indexRightNodeToInsert.ToString()!)] = bool.Parse(Console.ReadLine()!);
-                //             break;
-                //         default:
-                //             (VariableTables[codeBlock][leftNode!.Variable.Identifier] as List<string>)![
-                //                 int.Parse(indexRightNodeToInsert.ToString()!)] = Console.ReadLine()!;
-                //             break;
-                //     }
-                // }
+                if (param is BinaryOperationNode binaryOperationNode)
+                {
+                    var leftNode = binaryOperationNode.LeftNode as VariableNode;
+                    var indexRightNodeToInsert = WorkOnNode(binaryOperationNode.RightNode) as int?;
+
+                    while (codeBlock != "-1")
+                    {
+                        if (VariableTables[codeBlock].ContainsKey(leftNode!.Variable.Identifier))
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            codeBlock = ModifyLocalCodeBlock(codeBlock);
+                        }
+                    }
+
+                    var paramType = Semantic.GetReturnType(param);
+
+                    switch (paramType)
+                    {
+                        case "int":
+                            (VariableTables[codeBlock][leftNode!.Variable.Identifier] as List<int>)![
+                                int.Parse(indexRightNodeToInsert.ToString()!)] = int.Parse(Console.ReadLine()!);
+                            break;
+                        case "float":
+                            (VariableTables[codeBlock][leftNode!.Variable.Identifier] as List<double>)![
+                                int.Parse(indexRightNodeToInsert.ToString()!)] = double.Parse(Console.ReadLine()!);
+                            break;
+                        case "char":
+                            (VariableTables[codeBlock][leftNode!.Variable.Identifier] as List<char>)![
+                                int.Parse(indexRightNodeToInsert.ToString()!)] = char.Parse(Console.ReadLine()!);
+                            break;
+                        case "bool":
+                            (VariableTables[codeBlock][leftNode!.Variable.Identifier] as List<bool>)![
+                                int.Parse(indexRightNodeToInsert.ToString()!)] = bool.Parse(Console.ReadLine()!);
+                            break;
+                        default:
+                            (VariableTables[codeBlock][leftNode!.Variable.Identifier] as List<string>)![
+                                int.Parse(indexRightNodeToInsert.ToString()!)] = Console.ReadLine()!;
+                            break;
+                    }
+                }
             }
 
             return null;
@@ -233,6 +233,93 @@ public class Executor
                 DecreaseDepth();
 
                 ExecuteNode(functionNode.Body);
+            }
+
+            return null;
+        }
+
+        if (abstractNode is FunctionExecutionNode functionExecutionNode)
+        {
+            var codeLevel = CodeDepthLevel;
+            var codeParent = CodeDepthParent;
+            var codeBlock = CodeBlock;
+
+            foreach (var key in Functions[functionExecutionNode.Function.Identifier].Keys)
+            {
+                foreach (var body in Functions[functionExecutionNode.Function.Identifier].Values)
+                {
+                    var paramtrs = VariableTables[key].Keys.ToList();
+
+                    for (int index = 1; index < functionExecutionNode.Parameters.Count; index++)
+                    {
+                        VariableTables[key][paramtrs[index]] = WorkOnNode(functionExecutionNode.Parameters[index]);
+                    }
+
+                    CodeBlock = key;
+                    CodeDepthLevel = int.Parse(key.Split(":")[0]);
+                    CodeDepthParent = int.Parse(key.Split(":")[^1]);
+                    InFor = true;
+                    WorkOnNode(body);
+                }
+            }
+
+            CodeDepthLevel = codeLevel;
+            CodeDepthParent = codeParent;
+            CodeBlock = codeBlock;
+
+            return null;
+        }
+
+        if (abstractNode is VariableNode varNode)
+        {
+            var codeBlock = GetCodeBlock();
+
+            while (codeBlock != "-1")
+            {
+                if (VariableTables[codeBlock].ContainsKey(varNode.Variable.Identifier))
+                {
+                    return VariableTables[codeBlock][varNode.Variable.Identifier];
+                }
+                else
+                {
+                    ModifyLocalCodeBlock(codeBlock);
+                }
+            }
+        }
+
+        if (abstractNode is SwitchNode switchNode)
+        {
+            var codeBlock = GetCodeBlock();
+
+            while (codeBlock != "-1")
+            {
+                if (VariableTables[codeBlock].ContainsKey(switchNode.Variable.Identifier))
+                {
+                    break;
+                }
+                else
+                {
+                    ModifyLocalCodeBlock(codeBlock);
+                }
+            }
+
+            SwitchValue = VariableTables[codeBlock][switchNode.Variable.Identifier];
+            WorkOnNode(switchNode.Body);
+            NeedToExecute = true;
+            FoundDefault = false;
+            InSwitch = false;
+
+            return null;
+        }
+
+        if (abstractNode is CaseNode caseNode)
+        {
+            NeedToExecute = false;
+
+            if (caseNode.Literal.Identifier.Replace("\'", "") == SwitchValue?.ToString())
+            {
+                NeedToExecute = true;
+                InSwitch = true;
             }
 
             return null;
@@ -303,7 +390,7 @@ public class Executor
 
         CodeBlock += $":{CodeDepthParent}";
     }
-    
+
     private void DecreaseDepth()
     {
         CodeDepthLevel -= 1;
@@ -320,7 +407,7 @@ public class Executor
             CodeBlock += $":{block[index]}";
         }
     }
-    
+
     private void DecreaseDepthOnlyForLevel()
     {
         CodeDepthLevel -= 1;
@@ -336,21 +423,21 @@ public class Executor
             CodeBlock += $":{block[index]}";
         }
     }
-    
-    private string ModifyLocalCodeBlock(string CodeBlockToModify)
-    {
-        CodeBlockToModify = CodeBlockToModify.Remove(CodeBlockToModify.Length - 2);
 
-        var block = CodeBlockToModify.Split(":");
+    private string ModifyLocalCodeBlock(string codeBlockToModify)
+    {
+        codeBlockToModify = codeBlockToModify.Remove(codeBlockToModify.Length - 2);
+
+        var block = codeBlockToModify.Split(":");
         block[0] = (int.Parse(block[0]) - 1).ToString();
-        CodeBlockToModify = "";
-        CodeBlockToModify += block[0];
+        codeBlockToModify = "";
+        codeBlockToModify += block[0];
 
         for (int index = 1; index < block.Length; index++)
         {
-            CodeBlockToModify += $":{block[index]}";
+            codeBlockToModify += $":{block[index]}";
         }
 
-        return CodeBlockToModify;
+        return codeBlockToModify;
     }
 }
