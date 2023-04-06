@@ -35,7 +35,7 @@ public class Executor
         }
 
         Semantic = semantic;
-        CodeBlock = "NONE"; // would be needed for code expanding
+        CodeBlock = "-1"; // would be needed for code expanding
         CodeDepthLevel = -1;
         CodeDepthParent = -1;
         CodeBlockIndex = -1;
@@ -117,6 +117,46 @@ public class Executor
 
                 Console.Write(readyParam);
             }
+        }
+
+        if (abstractNode is CinNode cinNode && (NeedToExecute || FoundDefault))
+        {
+            foreach (var param in cinNode.Parameters)
+            {
+                var codeBlock = GetCodeBlock();
+
+                if (param is VariableNode variableNode)
+                {
+                    while (codeBlock != "-1")
+                    {
+                        if (VariableTables[codeBlock].ContainsKey(variableNode.Variable.Identifier))
+                        {
+                            switch (VariableTables[codeBlock][variableNode.Variable.Identifier])
+                            {
+                                case "int":
+                                    return int.Parse(Console.ReadLine()!);
+                                case "float":
+                                    return double.Parse(Console.ReadLine()!);
+                                case "char":
+                                    return char.Parse(Console.ReadLine()!);
+                                case "bool":
+                                    return bool.Parse(Console.ReadLine()!);
+                                default:
+                                    return Console.ReadLine();
+                            }
+
+                            break;
+                        }
+                        else
+                        {
+                            codeBlock = ModifyLocalCodeBlock(codeBlock);
+                        }
+                    }
+                }
+                
+            }
+
+            return null;
         }
 
         if (abstractNode is LiteralNode literalNode)
@@ -244,5 +284,22 @@ public class Executor
         {
             CodeBlock += $":{block[index]}";
         }
+    }
+
+    private string ModifyLocalCodeBlock(string CodeBlockToModify)
+    {
+        CodeBlockToModify = CodeBlockToModify.Remove(CodeBlockToModify.Length - 2);
+
+        var block = CodeBlockToModify.Split(":");
+        block[0] = (int.Parse(block[0]) - 1).ToString();
+        CodeBlockToModify = "";
+        CodeBlockToModify += block[0];
+
+        for (int index = 1; index < block.Length; index++)
+        {
+            CodeBlockToModify += $":{block[index]}";
+        }
+
+        return CodeBlockToModify;
     }
 }

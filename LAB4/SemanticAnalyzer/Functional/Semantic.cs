@@ -147,7 +147,7 @@ public class Semantic
         return;
     }
 
-    private string GetReturnType(AbstractNode abstractNode)
+    public string GetReturnType(AbstractNode abstractNode)
     {
         if (abstractNode is BinaryOperationNode binaryOperationNode)
         {
