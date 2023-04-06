@@ -373,6 +373,101 @@ public class Executor
             return ifResult;
         }
 
+        if (abstractNode is ForNode forNode && (NeedToExecute || FoundDefault))
+        {
+            IncreaseDepth();
+
+            WorkOnNode(forNode.First);
+
+            while (true)
+            {
+                var forCondition = WorkOnNode(forNode.Second) as bool?;
+
+                if (forCondition != null)
+                {
+                    if (forCondition == false || FoundBreak)
+                    {
+                        DecreaseDepthOnlyForLevel();
+                        FoundBreak = false;
+                        break;
+                    }
+                }
+
+                InFor = true;
+
+                var saveCodeBlock = CodeBlock;
+                var saveCodeLevel = CodeDepthLevel;
+                var saveCodeParent = CodeDepthParent;
+
+                WorkOnNode(forNode.Body);
+
+                CodeBlock = saveCodeBlock;
+                CodeDepthLevel = saveCodeLevel;
+                CodeDepthParent = saveCodeParent;
+
+                WorkOnNode(forNode.Third);
+            }
+
+            CodeDepthParent -= 1;
+
+            ExecuteNode(forNode);
+
+            return null;
+        }
+
+        if (abstractNode is UnaryOperationNode unaryOperationNode && (NeedToExecute || FoundDefault))
+        {
+            if (unaryOperationNode.Operator.Identifier == "++")
+            {
+                var variable = unaryOperationNode.Operand as VariableNode;
+                var codeBlock = GetCodeBlock();
+
+                if (variable.Variable.Type == "int")
+                {
+                    VariableTables[codeBlock][variable.Variable.Identifier] =
+                        (VariableTables[codeBlock][variable.Variable.Identifier] as int?)! + 1;
+                }
+
+                if (variable.Variable.Type == "float")
+                {
+                    VariableTables[codeBlock][variable.Variable.Identifier] =
+                        (VariableTables[codeBlock][variable.Variable.Identifier] as double?)! + 1;
+                }
+
+                if (variable.Variable.Type == "char")
+                {
+                    VariableTables[codeBlock][variable.Variable.Identifier] =
+                        (VariableTables[codeBlock][variable.Variable.Identifier] as char?)! + 1;
+                }
+            }
+
+            if (unaryOperationNode.Operator.Identifier == "--")
+            {
+                var variable = unaryOperationNode.Operand as VariableNode;
+                var codeBlock = GetCodeBlock();
+
+                if (variable.Variable.Type == "int")
+                {
+                    VariableTables[codeBlock][variable.Variable.Identifier] =
+                        (VariableTables[codeBlock][variable.Variable.Identifier] as int?)! - 1;
+                }
+
+                if (variable.Variable.Type == "float")
+                {
+                    VariableTables[codeBlock][variable.Variable.Identifier] =
+                        (VariableTables[codeBlock][variable.Variable.Identifier] as double?)! - 1;
+                }
+
+                if (variable.Variable.Type == "char")
+                {
+                    VariableTables[codeBlock][variable.Variable.Identifier] =
+                        (VariableTables[codeBlock][variable.Variable.Identifier] as char?)! - 1;
+                }
+            }
+
+            return null;
+        }
+
         if (abstractNode is VariableTypeNode)
         {
             return null;
