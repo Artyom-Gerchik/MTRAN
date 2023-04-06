@@ -473,6 +473,81 @@ public class Executor
             switch (binaryOperationNod.Operator.Identifier)
             {
                 case "=":
+
+                    var codeBlock = GetCodeBlock();
+
+                    if (binaryOperationNod.LeftNode is VariableNode variableNode)
+                    {
+                        while (codeBlock != "-1")
+                        {
+                            if (VariableTables[codeBlock].ContainsKey(variableNode.Variable.Identifier))
+                            {
+                                break;
+                            }
+                            else
+                            {
+                                ModifyLocalCodeBlock(codeBlock);
+                            }
+                        }
+
+                        VariableTables[codeBlock][variableNode.Variable.Identifier] =
+                            WorkOnNode(binaryOperationNod.RightNode);
+                    }
+
+                    if (binaryOperationNod.LeftNode is BinaryOperationNode binaryOperationNoed)
+                    {
+                        var leftNode = binaryOperationNoed.LeftNode as VariableNode;
+                        var indexNode = WorkOnNode(binaryOperationNoed) as int?;
+
+                        while (codeBlock != "-1")
+                        {
+                            if (VariableTables[codeBlock].ContainsKey(leftNode.Variable.Identifier))
+                            {
+                                break;
+                            }
+                            else
+                            {
+                                ModifyLocalCodeBlock(codeBlock);
+                            }
+                        }
+
+
+                        var returnType3 = Semantic.GetReturnType(binaryOperationNoed.LeftNode).Replace("#", "");
+
+                        if (returnType3 == "int")
+                        {
+                            (VariableTables[codeBlock][leftNode.Variable.Identifier] as List<int>)
+                                [int.Parse(indexNode.ToString())] =
+                                int.Parse((WorkOnNode(binaryOperationNod.RightNode) as int?).ToString());
+                        }
+
+                        if (returnType3 == "float")
+                        {
+                            (VariableTables[codeBlock][leftNode.Variable.Identifier] as List<double>)
+                                [int.Parse(indexNode.ToString())] =
+                                double.Parse((WorkOnNode(binaryOperationNod.RightNode) as double?).ToString());
+                        }
+
+                        if (returnType3 == "char")
+                        {
+                            (VariableTables[codeBlock][leftNode.Variable.Identifier] as List<char>)
+                                [int.Parse(indexNode.ToString())] =
+                                char.Parse((WorkOnNode(binaryOperationNod.RightNode) as char?).ToString());
+                        }
+
+                        if (returnType3 == "bool")
+                        {
+                            (VariableTables[codeBlock][leftNode.Variable.Identifier] as List<bool>)
+                                [int.Parse(indexNode.ToString())] =
+                                bool.Parse((WorkOnNode(binaryOperationNod.RightNode) as bool?).ToString());
+                        }
+                        else
+                        {
+                            (VariableTables[codeBlock][leftNode.Variable.Identifier] as List<string>)[
+                                int.Parse(indexNode.ToString())] = (WorkOnNode(binaryOperationNod.RightNode) as string);
+                        }
+                    }
+
                     break;
                 case "==":
                 case "!=":
@@ -482,6 +557,172 @@ public class Executor
                 case "-":
                 case "*":
                 case "/":
+
+
+                    var leftNodeReturnType = Semantic.GetReturnType(binaryOperationNod.LeftNode);
+                    var rightNodeReturnType = Semantic.GetReturnType(binaryOperationNod.RightNode);
+
+                    switch (leftNodeReturnType)
+                    {
+                        case "int":
+                            var leftAsINT = WorkOnNode(binaryOperationNod.LeftNode) as int?;
+
+                            switch (rightNodeReturnType)
+                            {
+                                case "int:":
+                                    var rightAsINT = WorkOnNode(binaryOperationNod.RightNode) as int?;
+                                    switch (binaryOperationNod.Operator.Identifier)
+                                    {
+                                        case "==":
+                                            return leftAsINT == rightAsINT;
+                                        case "!=":
+                                            return leftAsINT != rightAsINT;
+                                        case "<":
+                                            return leftAsINT < rightAsINT;
+                                        case ">":
+                                            return leftAsINT > rightAsINT;
+                                        case "+":
+                                            return leftAsINT + rightAsINT;
+                                        case "-":
+                                            return leftAsINT - rightAsINT;
+                                        case "*":
+                                            return leftAsINT * rightAsINT;
+                                        case "/":
+                                            return leftAsINT / rightAsINT;
+                                    }
+                                    break;
+                                
+                                case "float:":
+                                    var rightAsFLOAT = WorkOnNode(binaryOperationNod.RightNode) as double?;
+                                    switch (binaryOperationNod.Operator.Identifier)
+                                    {
+                                        case "==":
+                                            return leftAsINT == rightAsFLOAT;
+                                        case "!=":
+                                            return leftAsINT != rightAsFLOAT;
+                                        case "<":
+                                            return leftAsINT < rightAsFLOAT;
+                                        case ">":
+                                            return leftAsINT > rightAsFLOAT;
+                                        case "+":
+                                            return leftAsINT + rightAsFLOAT;
+                                        case "-":
+                                            return leftAsINT - rightAsFLOAT;
+                                        case "*":
+                                            return leftAsINT * rightAsFLOAT;
+                                        case "/":
+                                            return leftAsINT / rightAsFLOAT;
+                                    }
+
+                                    break;
+                                case "char:":
+                                    var rightAsCHAR = WorkOnNode(binaryOperationNod.RightNode) as char?;
+
+                                    switch (binaryOperationNod.Operator.Identifier)
+                                    {
+                                        case "==":
+                                            return leftAsINT == rightAsCHAR;
+                                        case "!=":
+                                            return leftAsINT != rightAsCHAR;
+                                        case "<":
+                                            return leftAsINT < rightAsCHAR;
+                                        case ">":
+                                            return leftAsINT > rightAsCHAR;
+                                        case "+":
+                                            return leftAsINT + rightAsCHAR;
+                                        case "-":
+                                            return leftAsINT - rightAsCHAR;
+                                        case "*":
+                                            return leftAsINT * rightAsCHAR;
+                                        case "/":
+                                            return leftAsINT / rightAsCHAR;
+                                    }
+
+                                    break;
+                            }
+
+                            break;
+                        case "float":
+                            var leftAsFLOAT = WorkOnNode(binaryOperationNod.LeftNode) as double?;
+
+                            switch (rightNodeReturnType)
+                            {
+                                case "int:":
+                                    var rightAsINT = WorkOnNode(binaryOperationNod.RightNode) as int?;
+                                    switch (binaryOperationNod.Operator.Identifier)
+                                    {
+                                        case "==":
+                                            return leftAsFLOAT == rightAsINT;
+                                        case "!=":
+                                            return leftAsFLOAT != rightAsINT;
+                                        case "<":
+                                            return leftAsFLOAT < rightAsINT;
+                                        case ">":
+                                            return leftAsFLOAT > rightAsINT;
+                                        case "+":
+                                            return leftAsFLOAT + rightAsINT;
+                                        case "-":
+                                            return leftAsFLOAT - rightAsINT;
+                                        case "*":
+                                            return leftAsFLOAT * rightAsINT;
+                                        case "/":
+                                            return leftAsFLOAT / rightAsINT;
+                                    }
+                                    break;
+                                
+                                case "float:":
+                                    var rightAsFLOAT = WorkOnNode(binaryOperationNod.RightNode) as double?;
+                                    switch (binaryOperationNod.Operator.Identifier)
+                                    {
+                                        case "==":
+                                            return leftAsFLOAT == rightAsFLOAT;
+                                        case "!=":
+                                            return leftAsFLOAT != rightAsFLOAT;
+                                        case "<":
+                                            return leftAsFLOAT < rightAsFLOAT;
+                                        case ">":
+                                            return leftAsFLOAT > rightAsFLOAT;
+                                        case "+":
+                                            return leftAsFLOAT + rightAsFLOAT;
+                                        case "-":
+                                            return leftAsFLOAT - rightAsFLOAT;
+                                        case "*":
+                                            return leftAsFLOAT * rightAsFLOAT;
+                                        case "/":
+                                            return leftAsFLOAT / rightAsFLOAT;
+                                    }
+
+                                    break;
+                                case "char:":
+                                    var rightAsCHAR = WorkOnNode(binaryOperationNod.RightNode) as char?;
+
+                                    switch (binaryOperationNod.Operator.Identifier)
+                                    {
+                                        case "==":
+                                            return leftAsFLOAT == rightAsCHAR;
+                                        case "!=":
+                                            return leftAsFLOAT != rightAsCHAR;
+                                        case "<":
+                                            return leftAsFLOAT < rightAsCHAR;
+                                        case ">":
+                                            return leftAsFLOAT > rightAsCHAR;
+                                        case "+":
+                                            return leftAsFLOAT + rightAsCHAR;
+                                        case "-":
+                                            return leftAsFLOAT - rightAsCHAR;
+                                        case "*":
+                                            return leftAsFLOAT * rightAsCHAR;
+                                        case "/":
+                                            return leftAsFLOAT / rightAsCHAR;
+                                    }
+
+                                    break;
+                            }
+
+                            break;
+                    }
+
+
                     break;
 
                 case "new":
