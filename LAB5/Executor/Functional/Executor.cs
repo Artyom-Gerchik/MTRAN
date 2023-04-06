@@ -153,7 +153,50 @@ public class Executor
                         }
                     }
                 }
-                
+
+                // if (param is BinaryOperationNode binaryOperationNode)
+                // {
+                //     var leftNode = binaryOperationNode.LeftNode as VariableNode;
+                //     var indexRightNodeToInsert = WorkOnNode(binaryOperationNode.RightNode) as int?;
+                //
+                //     while (codeBlock != "-1")
+                //     {
+                //         if (VariableTables[codeBlock].ContainsKey(leftNode!.Variable.Identifier))
+                //         {
+                //             break;
+                //         }
+                //         else
+                //         {
+                //             codeBlock = ModifyLocalCodeBlock(codeBlock);
+                //         }
+                //     }
+                //
+                //     var paramType = Semantic.GetReturnType(param);
+                //
+                //     switch (paramType)
+                //     {
+                //         case "int":
+                //             (VariableTables[codeBlock][leftNode!.Variable.Identifier] as List<int>)![
+                //                 int.Parse(indexRightNodeToInsert.ToString()!)] = int.Parse(Console.ReadLine()!);
+                //             break;
+                //         case "float":
+                //             (VariableTables[codeBlock][leftNode!.Variable.Identifier] as List<double>)![
+                //                 int.Parse(indexRightNodeToInsert.ToString()!)] = double.Parse(Console.ReadLine()!);
+                //             break;
+                //         case "char":
+                //             (VariableTables[codeBlock][leftNode!.Variable.Identifier] as List<char>)![
+                //                 int.Parse(indexRightNodeToInsert.ToString()!)] = char.Parse(Console.ReadLine()!);
+                //             break;
+                //         case "bool":
+                //             (VariableTables[codeBlock][leftNode!.Variable.Identifier] as List<bool>)![
+                //                 int.Parse(indexRightNodeToInsert.ToString()!)] = bool.Parse(Console.ReadLine()!);
+                //             break;
+                //         default:
+                //             (VariableTables[codeBlock][leftNode!.Variable.Identifier] as List<string>)![
+                //                 int.Parse(indexRightNodeToInsert.ToString()!)] = Console.ReadLine()!;
+                //             break;
+                //     }
+                // }
             }
 
             return null;
@@ -215,9 +258,15 @@ public class Executor
             return;
         }
 
-        if (abstractNode is StatementsNode)
+        if (abstractNode is StatementsNode statementsNode)
         {
-            //TODO
+            IncreaseDepth();
+            foreach (var node in statementsNode.Nodes)
+            {
+                ExecuteNode(node);
+            }
+
+            DecreaseDepthOnlyForLevel();
         }
 
         if (abstractNode is ForNode forNode)
@@ -254,14 +303,15 @@ public class Executor
 
         CodeBlock += $":{CodeDepthParent}";
     }
-
+    
     private void DecreaseDepth()
     {
         CodeDepthLevel -= 1;
         CodeDepthParent -= 1;
 
         CodeBlock = CodeBlock.Remove(CodeBlock.Length - 2);
-        var block = CodeDepthLevel.ToString();
+        var block = CodeBlock.Split(":");
+        block[0] = CodeDepthLevel.ToString();
         CodeBlock = "";
         CodeBlock += block[0];
 
@@ -270,13 +320,14 @@ public class Executor
             CodeBlock += $":{block[index]}";
         }
     }
-
+    
     private void DecreaseDepthOnlyForLevel()
     {
         CodeDepthLevel -= 1;
 
         CodeBlock = CodeBlock.Remove(CodeBlock.Length - 2);
-        var block = CodeDepthLevel.ToString();
+        var block = CodeBlock.Split(":");
+        block[0] = CodeDepthLevel.ToString();
         CodeBlock = "";
         CodeBlock += block[0];
 
@@ -285,7 +336,7 @@ public class Executor
             CodeBlock += $":{block[index]}";
         }
     }
-
+    
     private string ModifyLocalCodeBlock(string CodeBlockToModify)
     {
         CodeBlockToModify = CodeBlockToModify.Remove(CodeBlockToModify.Length - 2);
