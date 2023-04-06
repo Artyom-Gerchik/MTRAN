@@ -355,6 +355,24 @@ public class Executor
             return null;
         }
 
+        if (abstractNode is IfNode ifNode && (NeedToExecute || FoundDefault))
+        {
+            var ifCondition = WorkOnNode(ifNode.Condition) as bool?;
+
+            object? ifResult;
+
+            if (ifCondition == true)
+            {
+                ifResult = WorkOnNode(ifNode.Body);
+            }
+            else
+            {
+                ifResult = WorkOnNode(ifNode.ElseBody);
+            }
+
+            return ifResult;
+        }
+
         if (abstractNode is VariableTypeNode)
         {
             return null;
