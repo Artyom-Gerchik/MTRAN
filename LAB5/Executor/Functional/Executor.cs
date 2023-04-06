@@ -325,6 +325,36 @@ public class Executor
             return null;
         }
 
+        if (abstractNode is WhileNode whileNode && (NeedToExecute || FoundDefault))
+        {
+            while (true)
+            {
+                var whileCondition = WorkOnNode(whileNode.Condition) as bool?;
+
+                if (whileCondition != null)
+                {
+                    if (whileCondition == false)
+                    {
+                        break;
+                    }
+                }
+
+                InFor = true;
+
+                var saveCodeBlock = CodeBlock;
+                var saveCodeLevel = CodeDepthLevel;
+                var saveCodeParent = CodeDepthParent;
+
+                WorkOnNode(whileNode.Body);
+
+                CodeBlock = saveCodeBlock;
+                CodeDepthLevel = saveCodeLevel;
+                CodeDepthParent = saveCodeParent;
+            }
+
+            return null;
+        }
+
         if (abstractNode is VariableTypeNode)
         {
             return null;
