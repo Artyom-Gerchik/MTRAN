@@ -468,6 +468,31 @@ public class Executor
             return null;
         }
 
+        if (abstractNode is BinaryOperationNode binaryOperationNod && (NeedToExecute || FoundDefault))
+        {
+            switch (binaryOperationNod.Operator.Identifier)
+            {
+                case "=":
+                    break;
+                case "==":
+                case "!=":
+                case "<":
+                case ">":
+                case "+":
+                case "-":
+                case "*":
+                case "/":
+                    break;
+
+                case "new":
+                    break;
+                case "[]":
+                    break;
+            }
+
+            return null;
+        }
+
         if (abstractNode is VariableTypeNode)
         {
             return null;
