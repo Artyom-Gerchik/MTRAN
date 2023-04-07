@@ -18,9 +18,14 @@ public class Executor
     private bool InSwitch { get; set; }
     private object? SwitchValue { get; set; }
     private bool InFor { get; set; }
+    public bool TEST { get; set; }
+    public string TEST1 { get; set; }
+    public bool TMPBOOL { get; set; }
+
     private Dictionary<string, Dictionary<string, AbstractNode>> Functions { get; set; } = new();
 
-    public Executor(AbstractNode root, Dictionary<string, Dictionary<string, string>> variableTables, Semantic semantic)
+    public Executor(AbstractNode root, Dictionary<string, Dictionary<string, string>> variableTables, Semantic semantic,
+        bool test)
     {
         Root = root;
 
@@ -45,6 +50,9 @@ public class Executor
         InSwitch = false;
         SwitchValue = null;
         InFor = false;
+        TEST = test;
+        TEST1 = "";
+        TMPBOOL = false;
     }
 
     public void Execute()
@@ -54,6 +62,10 @@ public class Executor
 
     public object? WorkOnNode(AbstractNode? abstractNode)
     {
+        if (TMPBOOL)
+        {
+            CodeBlock = "1:0:1";
+        }
         if (abstractNode == null)
         {
             return null;
@@ -75,6 +87,15 @@ public class Executor
                 if (!FoundBreak)
                 {
                     WorkOnNode(node);
+                    if (FoundBreak)
+                    {
+                        continue;
+                    }
+                }
+
+                if (FoundBreak && !InSwitch)
+                {
+                    WorkOnNode(node);
                 }
             }
 
@@ -88,7 +109,11 @@ public class Executor
                 case "endl":
                     return "\n";
                 case "break":
-                    FoundBreak = true;
+                    if (InSwitch)
+                    {
+                        FoundBreak = true;
+                    }
+
                     break;
                 case "default":
                     if (InSwitch)
@@ -125,27 +150,39 @@ public class Executor
             {
                 var codeBlock = GetCodeBlock();
 
+                var paramType = Semantic.GetReturnType(param);
+
                 if (param is VariableNode variableNode)
                 {
                     while (codeBlock != "-1")
                     {
                         if (VariableTables[codeBlock].ContainsKey(variableNode.Variable.Identifier))
                         {
-                            switch (VariableTables[codeBlock][variableNode.Variable.Identifier])
+                            VariableTables[codeBlock][variableNode.Variable.Identifier] = paramType switch
                             {
-                                case "int":
-                                    return int.Parse(Console.ReadLine()!);
-                                case "float":
-                                    return double.Parse(Console.ReadLine()!);
-                                case "char":
-                                    return char.Parse(Console.ReadLine()!);
-                                case "bool":
-                                    return bool.Parse(Console.ReadLine()!);
-                                default:
-                                    return Console.ReadLine();
-                            }
-
+                                "int" => int.Parse(Console.ReadLine()!),
+                                "float" => double.Parse(Console.ReadLine()!),
+                                "char" => char.Parse(Console.ReadLine()!),
+                                "bool" => bool.Parse(Console.ReadLine()!),
+                                _ => Console.ReadLine()!,
+                            };
                             break;
+
+                            // switch (VariableTables[codeBlock][variableNode.Variable.Identifier])
+                            // {
+                            //     case "int":
+                            //         return int.Parse(Console.ReadLine()!);
+                            //     case "float":
+                            //         return double.Parse(Console.ReadLine()!);
+                            //     case "char":
+                            //         return char.Parse(Console.ReadLine()!);
+                            //     case "bool":
+                            //         return bool.Parse(Console.ReadLine()!);
+                            //     default:
+                            //         return Console.ReadLine();
+                            // }
+                            //
+                            // break;
                         }
                         else
                         {
@@ -170,8 +207,6 @@ public class Executor
                             codeBlock = ModifyLocalCodeBlock(codeBlock);
                         }
                     }
-
-                    var paramType = Semantic.GetReturnType(param);
 
                     switch (paramType)
                     {
@@ -282,7 +317,7 @@ public class Executor
                 }
                 else
                 {
-                    ModifyLocalCodeBlock(codeBlock);
+                    codeBlock = ModifyLocalCodeBlock(codeBlock);
                 }
             }
         }
@@ -299,7 +334,7 @@ public class Executor
                 }
                 else
                 {
-                    ModifyLocalCodeBlock(codeBlock);
+                    codeBlock = ModifyLocalCodeBlock(codeBlock);
                 }
             }
 
@@ -401,11 +436,11 @@ public class Executor
 
                 WorkOnNode(forNode.Body);
 
+                WorkOnNode(forNode.Third);
+
                 CodeBlock = saveCodeBlock;
                 CodeDepthLevel = saveCodeLevel;
                 CodeDepthParent = saveCodeParent;
-
-                WorkOnNode(forNode.Third);
             }
 
             CodeDepthParent -= 1;
@@ -486,7 +521,7 @@ public class Executor
                             }
                             else
                             {
-                                ModifyLocalCodeBlock(codeBlock);
+                                codeBlock = ModifyLocalCodeBlock(codeBlock);
                             }
                         }
 
@@ -497,28 +532,37 @@ public class Executor
                     if (binaryOperationNod.LeftNode is BinaryOperationNode binaryOperationNoed)
                     {
                         var leftNode = binaryOperationNoed.LeftNode as VariableNode;
-                        var indexNode = WorkOnNode(binaryOperationNoed) as int?;
+
+                        var indexNode = WorkOnNode(binaryOperationNoed.RightNode) as int?;
 
                         while (codeBlock != "-1")
                         {
-                            if (VariableTables[codeBlock].ContainsKey(leftNode.Variable.Identifier))
+                            if (VariableTables[codeBlock].ContainsKey(leftNode?.Variable.Identifier))
                             {
                                 break;
                             }
                             else
                             {
-                                ModifyLocalCodeBlock(codeBlock);
+                                codeBlock = ModifyLocalCodeBlock(codeBlock);
                             }
                         }
 
 
-                        var returnType3 = Semantic.GetReturnType(binaryOperationNoed.LeftNode).Replace("#", "");
+                        var returnType3 = Semantic.GetReturnType(binaryOperationNoed.LeftNode).Replace("*", "");
 
                         if (returnType3 == "int")
                         {
                             (VariableTables[codeBlock][leftNode.Variable.Identifier] as List<int>)
                                 [int.Parse(indexNode.ToString())] =
                                 int.Parse((WorkOnNode(binaryOperationNod.RightNode) as int?).ToString());
+                            if (TEST)
+                            {
+                                TEST1 = CodeBlock;
+                                CodeBlock = codeBlock;
+                                TMPBOOL = true;
+                            }
+
+                            break;
                         }
 
                         if (returnType3 == "float")
@@ -526,6 +570,7 @@ public class Executor
                             (VariableTables[codeBlock][leftNode.Variable.Identifier] as List<double>)
                                 [int.Parse(indexNode.ToString())] =
                                 double.Parse((WorkOnNode(binaryOperationNod.RightNode) as double?).ToString());
+                            break;
                         }
 
                         if (returnType3 == "char")
@@ -533,6 +578,7 @@ public class Executor
                             (VariableTables[codeBlock][leftNode.Variable.Identifier] as List<char>)
                                 [int.Parse(indexNode.ToString())] =
                                 char.Parse((WorkOnNode(binaryOperationNod.RightNode) as char?).ToString());
+                            break;
                         }
 
                         if (returnType3 == "bool")
@@ -540,11 +586,13 @@ public class Executor
                             (VariableTables[codeBlock][leftNode.Variable.Identifier] as List<bool>)
                                 [int.Parse(indexNode.ToString())] =
                                 bool.Parse((WorkOnNode(binaryOperationNod.RightNode) as bool?).ToString());
+                            break;
                         }
                         else
                         {
                             (VariableTables[codeBlock][leftNode.Variable.Identifier] as List<string>)[
                                 int.Parse(indexNode.ToString())] = (WorkOnNode(binaryOperationNod.RightNode) as string);
+                            break;
                         }
                     }
 
@@ -569,7 +617,7 @@ public class Executor
 
                             switch (rightNodeReturnType)
                             {
-                                case "int:":
+                                case "int":
                                     var rightAsINT = WorkOnNode(binaryOperationNod.RightNode) as int?;
                                     switch (binaryOperationNod.Operator.Identifier)
                                     {
@@ -590,9 +638,10 @@ public class Executor
                                         case "/":
                                             return leftAsINT / rightAsINT;
                                     }
+
                                     break;
-                                
-                                case "float:":
+
+                                case "float":
                                     var rightAsFLOAT = WorkOnNode(binaryOperationNod.RightNode) as double?;
                                     switch (binaryOperationNod.Operator.Identifier)
                                     {
@@ -615,7 +664,7 @@ public class Executor
                                     }
 
                                     break;
-                                case "char:":
+                                case "char":
                                     var rightAsCHAR = WorkOnNode(binaryOperationNod.RightNode) as char?;
 
                                     switch (binaryOperationNod.Operator.Identifier)
@@ -647,7 +696,7 @@ public class Executor
 
                             switch (rightNodeReturnType)
                             {
-                                case "int:":
+                                case "int":
                                     var rightAsINT = WorkOnNode(binaryOperationNod.RightNode) as int?;
                                     switch (binaryOperationNod.Operator.Identifier)
                                     {
@@ -668,9 +717,10 @@ public class Executor
                                         case "/":
                                             return leftAsFLOAT / rightAsINT;
                                     }
+
                                     break;
-                                
-                                case "float:":
+
+                                case "float":
                                     var rightAsFLOAT = WorkOnNode(binaryOperationNod.RightNode) as double?;
                                     switch (binaryOperationNod.Operator.Identifier)
                                     {
@@ -693,7 +743,7 @@ public class Executor
                                     }
 
                                     break;
-                                case "char:":
+                                case "char":
                                     var rightAsCHAR = WorkOnNode(binaryOperationNod.RightNode) as char?;
 
                                     switch (binaryOperationNod.Operator.Identifier)
@@ -720,14 +770,227 @@ public class Executor
                             }
 
                             break;
-                    }
 
+                        case "char":
+                            var leftAsCHAR = WorkOnNode(binaryOperationNod.LeftNode) as char?;
+
+                            switch (rightNodeReturnType)
+                            {
+                                case "int":
+                                    var rightAsINT = WorkOnNode(binaryOperationNod.RightNode) as int?;
+                                    switch (binaryOperationNod.Operator.Identifier)
+                                    {
+                                        case "==":
+                                            return leftAsCHAR == rightAsINT;
+                                        case "!=":
+                                            return leftAsCHAR != rightAsINT;
+                                        case "<":
+                                            return leftAsCHAR < rightAsINT;
+                                        case ">":
+                                            return leftAsCHAR > rightAsINT;
+                                        case "+":
+                                            return leftAsCHAR + rightAsINT;
+                                        case "-":
+                                            return leftAsCHAR - rightAsINT;
+                                        case "*":
+                                            return leftAsCHAR * rightAsINT;
+                                        case "/":
+                                            return leftAsCHAR / rightAsINT;
+                                    }
+
+                                    break;
+
+                                case "float":
+                                    var rightAsFLOAT = WorkOnNode(binaryOperationNod.RightNode) as double?;
+                                    switch (binaryOperationNod.Operator.Identifier)
+                                    {
+                                        case "==":
+                                            return leftAsCHAR == rightAsFLOAT;
+                                        case "!=":
+                                            return leftAsCHAR != rightAsFLOAT;
+                                        case "<":
+                                            return leftAsCHAR < rightAsFLOAT;
+                                        case ">":
+                                            return leftAsCHAR > rightAsFLOAT;
+                                        case "+":
+                                            return leftAsCHAR + rightAsFLOAT;
+                                        case "-":
+                                            return leftAsCHAR - rightAsFLOAT;
+                                        case "*":
+                                            return leftAsCHAR * rightAsFLOAT;
+                                        case "/":
+                                            return leftAsCHAR / rightAsFLOAT;
+                                    }
+
+                                    break;
+                                case "char":
+                                    var rightAsCHAR = WorkOnNode(binaryOperationNod.RightNode) as char?;
+
+                                    switch (binaryOperationNod.Operator.Identifier)
+                                    {
+                                        case "==":
+                                            return leftAsCHAR == rightAsCHAR;
+                                        case "!=":
+                                            return leftAsCHAR != rightAsCHAR;
+                                        case "<":
+                                            return leftAsCHAR < rightAsCHAR;
+                                        case ">":
+                                            return leftAsCHAR > rightAsCHAR;
+                                        case "+":
+                                            return leftAsCHAR + rightAsCHAR;
+                                        case "-":
+                                            return leftAsCHAR - rightAsCHAR;
+                                        case "*":
+                                            return leftAsCHAR * rightAsCHAR;
+                                        case "/":
+                                            return leftAsCHAR / rightAsCHAR;
+                                    }
+
+                                    break;
+                            }
+
+                            break;
+
+                        case "bool":
+                            var leftAsBOOL = WorkOnNode(binaryOperationNod.LeftNode) as bool?;
+                            var leftAsBOOLAsINT = 0;
+
+                            if (leftAsBOOL == true)
+                            {
+                                leftAsBOOLAsINT = 1;
+                            }
+
+                            var rightAsBOOL = WorkOnNode(binaryOperationNod.RightNode) as bool?;
+                            var rightAsBOOLAsINT = 0;
+
+                            if (rightAsBOOL == true)
+                            {
+                                rightAsBOOLAsINT = 1;
+                            }
+
+                            switch (binaryOperationNod.Operator.Identifier)
+                            {
+                                case "==":
+                                    return leftAsBOOLAsINT == rightAsBOOLAsINT;
+                                case "!=":
+                                    return leftAsBOOLAsINT != rightAsBOOLAsINT;
+                                case "<":
+                                    return leftAsBOOLAsINT < rightAsBOOLAsINT;
+                                case ">":
+                                    return leftAsBOOLAsINT > rightAsBOOLAsINT;
+                                case "+":
+                                    return leftAsBOOLAsINT + rightAsBOOLAsINT;
+                                case "-":
+                                    return leftAsBOOLAsINT - rightAsBOOLAsINT;
+                                case "*":
+                                    return leftAsBOOLAsINT * rightAsBOOLAsINT;
+                                case "/":
+                                    return leftAsBOOLAsINT / rightAsBOOLAsINT;
+                            }
+
+                            break;
+                        case "string":
+                            var leftAsSTRING = WorkOnNode(binaryOperationNod.LeftNode) as string;
+                            var rightAsSTRING = WorkOnNode(binaryOperationNod.RightNode) as string;
+                            switch (binaryOperationNod.Operator.Identifier)
+                            {
+                                case "==":
+                                    return leftAsSTRING == rightAsSTRING;
+                                case "!=":
+                                    return leftAsSTRING != rightAsSTRING;
+                                case "<":
+                                    return leftAsSTRING.CompareTo(rightAsSTRING) < 0 ? true : false;
+                                case ">":
+                                    return leftAsSTRING.CompareTo(rightAsSTRING) > 0 ? true : false;
+                                case "+":
+                                    return leftAsSTRING + rightAsSTRING;
+                                case "-":
+                                    throw new Exception("Not Real to do - with 2 strings");
+                                case "*":
+                                    throw new Exception("Not Real to do * with 2 strings");
+                                case "/":
+                                    throw new Exception("Not Real to do / with 2 strings");
+                            }
+
+                            break;
+                    }
 
                     break;
 
                 case "new":
+
+                    var returnType = Semantic.GetReturnType(binaryOperationNod.LeftNode).Replace("*", "");
+
+                    switch (returnType)
+                    {
+                        case "int":
+                            var intListCount = WorkOnNode(binaryOperationNod.RightNode) as int?;
+                            var intList = new List<int>(int.Parse(intListCount.ToString()!));
+
+                            for (var index = 0; index < intListCount; index++)
+                            {
+                                intList.Add(0);
+                            }
+
+                            return intList;
+                        case "float":
+                            var floatListCount = WorkOnNode(binaryOperationNod.RightNode) as int?;
+                            var floatList = new List<double>(int.Parse(floatListCount.ToString()!));
+
+                            for (var index = 0; index < floatListCount; index++)
+                            {
+                                floatList.Add(0);
+                            }
+
+                            return floatList;
+                        case "char":
+                            var charListCount = WorkOnNode(binaryOperationNod.RightNode) as int?;
+                            var charList = new List<char>(int.Parse(charListCount.ToString()!));
+
+                            for (var index = 0; index < charListCount; index++)
+                            {
+                                charList.Add('0');
+                            }
+
+                            return charList;
+                        case "string":
+                            var stringListCount = WorkOnNode(binaryOperationNod.RightNode) as int?;
+                            var stringList = new List<string>(int.Parse(stringListCount.ToString()!));
+
+                            for (var index = 0; index < stringListCount; index++)
+                            {
+                                stringList.Add("");
+                            }
+
+                            return stringList;
+                    }
+
                     break;
+
                 case "[]":
+
+                    var returnTypeForBracets = Semantic.GetReturnType(binaryOperationNod.LeftNode).Replace("*", "");
+
+                    switch (returnTypeForBracets)
+                    {
+                        case "int":
+                            var intList = WorkOnNode(binaryOperationNod.LeftNode) as List<int>;
+                            var intIndex = WorkOnNode(binaryOperationNod.RightNode) as int?;
+                            return intList![int.Parse((intIndex.ToString()!))];
+                        case "float":
+                            var floatList = WorkOnNode(binaryOperationNod.LeftNode) as List<double>;
+                            var floatIndex = WorkOnNode(binaryOperationNod.RightNode) as int?;
+                            return floatList![int.Parse((floatIndex.ToString()!))];
+                        case "char":
+                            var charList = WorkOnNode(binaryOperationNod.LeftNode) as List<char>;
+                            var charIndex = WorkOnNode(binaryOperationNod.RightNode) as int?;
+                            return charList![int.Parse((charIndex.ToString()!))];
+                        case "string":
+                            var stringList = WorkOnNode(binaryOperationNod.LeftNode) as List<string>;
+                            var stringIndex = WorkOnNode(binaryOperationNod.RightNode) as int?;
+                            return stringList![int.Parse((stringIndex.ToString()!))];
+                    }
+
                     break;
             }
 

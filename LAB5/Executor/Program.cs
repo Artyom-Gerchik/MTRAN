@@ -10,7 +10,7 @@ internal class Program
 {
     static void Main()
     {
-        var pathToFile = "test.cpp";
+        var pathToFile = "test1.cpp";
 
         using var reader = new StreamReader(pathToFile!);
         var codeText = reader.ReadToEnd();
@@ -34,7 +34,15 @@ internal class Program
 
         semantic.CheckCode();
 
-        var executor = new Executor(root, lexer.VariablesTables, semantic);
-        executor.Execute();
+        if (pathToFile == "test1.cpp")
+        {
+            var executor = new Executor(root, lexer.VariablesTables, semantic, true);
+            executor.Execute();
+        }
+        else
+        {
+            var executor1 = new Executor(root, lexer.VariablesTables, semantic, false);
+            executor1.Execute();
+        }
     }
 }

@@ -160,11 +160,11 @@ public class Semantic
                      binaryOperationNode.Operator.Identifier == "[]") && returnType2 == "int")
                 {
                     if (binaryOperationNode.Operator.Identifier == "new")
-                        return GetReturnType(binaryOperationNode.LeftNode) + "#";
+                        return GetReturnType(binaryOperationNode.LeftNode) + "*";
 
                     var returnType3 = GetReturnType(binaryOperationNode.LeftNode);
 
-                    if (returnType3.EndsWith('#')) return returnType3.Remove(returnType3.Length - 1);
+                    if (returnType3.EndsWith('*')) return returnType3.Remove(returnType3.Length - 1);
 
                     if (returnType3 == "string") return "char";
 
@@ -205,11 +205,11 @@ public class Semantic
                  binaryOperationNode.Operator.Identifier == "[]") && returnType2 == "int")
             {
                 if (binaryOperationNode.Operator.Identifier == "new")
-                    return GetReturnType(binaryOperationNode.LeftNode) + "#";
+                    return GetReturnType(binaryOperationNode.LeftNode) + "*";
 
                 var returnType3 = GetReturnType(binaryOperationNode.LeftNode);
 
-                if (returnType3.EndsWith('#')) return returnType3.Remove(returnType3.Length - 1);
+                if (returnType3.EndsWith('*')) return returnType3.Remove(returnType3.Length - 1);
 
                 if (returnType3 == "string") return "char";
 
